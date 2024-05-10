@@ -27,6 +27,14 @@ interface Release {
 	type: string;
 }
 
+interface ReleaseFilter {
+	operatingSystem: string | null;
+	architecture: string | null;
+	type: string | null;
+	dateAfter: string | null;
+	dateBefore: string | null;
+}
+
 async function createRelease(newRelease: NewRelease): Promise<Release> {
 	const id = randomUUID().replaceAll('-', '');
 
@@ -43,6 +51,40 @@ async function createRelease(newRelease: NewRelease): Promise<Release> {
 
 	await getDb().insertAsync(release);
 	return release;
+}
+
+async function listReleases(filter: ReleaseFilter): Promise<Release[]> {
+	console.log('filter', filter);
+	const query = buildQuery(filter);
+	console.log('query', query);
+
+	const result = await getDb().findAsync(query).sort({ date: 1 }).limit(1000);
+
+	return result as unknown as Release[];
+}
+
+function buildQuery(filter: ReleaseFilter): unknown {
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	const filterObj: any = {};
+	if (filter.type) {
+		filterObj['type'] = filter.type;
+	}
+	if (filter.operatingSystem) {
+		filterObj['environment.operatingSystem'] = filter.operatingSystem;
+	}
+	if (filter.architecture) {
+		filterObj['environment.architecture'] = filter.architecture;
+	}
+	if (filter.dateAfter || filter.dateBefore) {
+		filterObj['date'] = {};
+	}
+	if (filter.dateAfter) {
+		filterObj['date']['$gte'] = new Date(filter.dateAfter);
+	}
+	if (filter.dateBefore) {
+		filterObj['date']['$lte'] = new Date(filter.dateBefore);
+	}
+	return filterObj;
 }
 
 async function storeAndHashFile(id: string, date: Date, file: File): Promise<string> {
@@ -78,4 +120,4 @@ function getPathToFile(id: string, date: Date) {
 	return resolve(join(env.DATA_DIR, 'repository', datePath, `${id}.zip`));
 }
 
-export { type NewRelease, type Release, createRelease };
+export { type NewRelease, type Release, type ReleaseFilter, createRelease, listReleases };

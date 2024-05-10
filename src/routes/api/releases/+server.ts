@@ -1,13 +1,23 @@
 import { error, json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { createRelease } from '$lib/server/releases/service';
+import { createRelease, listReleases, type ReleaseFilter } from '$lib/server/releases/service';
 
 const allowedOperatingSystems = new Set<string>(['windows', 'linux', 'osx']);
 const allowedArchitectures = new Set<string>(['x86', 'arm']);
 const allowedTypes = new Set<string>(['nightly', 'feature', 'release']);
 
-export const GET: RequestHandler = async () => {
-	return new Response('Hello World');
+export const GET: RequestHandler = async ({ url: { searchParams } }) => {
+	const filter: ReleaseFilter = {
+		architecture: searchParams.get('architecture'),
+		type: searchParams.get('type'),
+		operatingSystem: searchParams.get('operatingSystem'),
+		dateAfter: searchParams.get('dateAfter'),
+		dateBefore: searchParams.get('dateBefore')
+	};
+	const releases = await listReleases(filter);
+	return json({
+		entries: releases
+	});
 };
 
 export const POST: RequestHandler = async ({ request }) => {
