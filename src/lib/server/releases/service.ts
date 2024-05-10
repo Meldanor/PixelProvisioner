@@ -54,13 +54,15 @@ async function createRelease(newRelease: NewRelease): Promise<Release> {
 }
 
 async function listReleases(filter: ReleaseFilter): Promise<Release[]> {
-	console.log('filter', filter);
 	const query = buildQuery(filter);
-	console.log('query', query);
 
 	const result = await getDb().findAsync(query).sort({ date: 1 }).limit(1000);
 
 	return result as unknown as Release[];
+}
+
+async function getRelease(id: string): Promise<Release | null> {
+	return (await getDb().findOneAsync({ _id: id })) as Release | null;
 }
 
 function buildQuery(filter: ReleaseFilter): unknown {
@@ -115,9 +117,21 @@ async function storeAndHashFile(id: string, date: Date, file: File): Promise<str
 	return hash;
 }
 
+function getPathToRelease(release: Release) {
+	return getPathToFile(release._id, release.date);
+}
+
 function getPathToFile(id: string, date: Date) {
 	const datePath = date.toISOString().split('T', 2)[0];
 	return resolve(join(env.DATA_DIR, 'repository', datePath, `${id}.zip`));
 }
 
-export { type NewRelease, type Release, type ReleaseFilter, createRelease, listReleases };
+export {
+	type NewRelease,
+	type Release,
+	type ReleaseFilter,
+	createRelease,
+	getRelease,
+	getPathToRelease,
+	listReleases
+};
