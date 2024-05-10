@@ -1,4 +1,4 @@
-import { randomUUID } from 'crypto';
+import { getDb } from '$lib/server/database/service';
 
 interface NewRelease {
 	environment: {
@@ -20,11 +20,15 @@ interface Release {
 }
 
 async function createRelease(newRelease: NewRelease): Promise<Release> {
-	return {
-		id: randomUUID(),
+	const document = {
 		date: new Date(),
 		environment: newRelease.environment,
 		type: newRelease.type
+	};
+	const newDocument = await getDb().insertAsync(document);
+	return {
+		id: newDocument._id,
+		...document
 	};
 }
 
