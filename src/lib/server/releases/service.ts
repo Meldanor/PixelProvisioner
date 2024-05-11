@@ -20,6 +20,10 @@ interface Release {
 	_id: string;
 	sha1: string;
 	date: Date;
+	file: {
+		name: string;
+		size: number;
+	},
 	environment: {
 		operatingSystem: string;
 		architecture: string;
@@ -43,6 +47,10 @@ async function createRelease(newRelease: NewRelease): Promise<Release> {
 
 	const release: Release = {
 		_id: id,
+		file: {
+			name: newRelease.file.name,
+			size: newRelease.file.size,
+		},
 		date: new Date(),
 		environment: newRelease.environment,
 		type: newRelease.type,

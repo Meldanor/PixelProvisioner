@@ -25,6 +25,8 @@ export const GET: RequestHandler = async ({ params, request }) => {
 		headers: {
 			'Content-Type': 'application/octet-stream',
 			'Cache-Control': 'max-age=0',
+			'Content-Disposition': 'attachment;filename='+release.file.name,
+			'Content-Length': release.file.size.toString(),
 			Etag: release.sha1
 		}
 	});
