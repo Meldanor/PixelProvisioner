@@ -1,6 +1,7 @@
 import { error, json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { createRelease, listReleases, type ReleaseFilter } from '$lib/server/releases/service';
+import { env } from '$env/dynamic/private';
 
 const allowedOperatingSystems = new Set<string>(['windows', 'linux', 'osx']);
 const allowedArchitectures = new Set<string>(['x86', 'arm']);
@@ -21,6 +22,9 @@ export const GET: RequestHandler = async ({ url: { searchParams } }) => {
 };
 
 export const POST: RequestHandler = async ({ request }) => {
+	if (request.headers.get('x-upload-token') !== env.X_UPLOAD_TOKEN) {
+		error(401, { message: 'Missing or invalid upload token' });
+	}
 	if (!request.headers.get('content-type')?.includes('multipart/form-data')) {
 		error(400, { message: 'only multipart/form-data is supported' });
 	}
