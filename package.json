@@ -1,6 +1,6 @@
 {
 	"name": "pixel-provisioner",
-	"version": "0.0.1",
+	"version": "0.9.0",
 	"private": true,
 	"scripts": {
 		"dev": "vite dev",
@@ -26,7 +26,7 @@
 		"eslint-plugin-svelte": "^2.36.0-next.13",
 		"prettier": "^3.2.5",
 		"prettier-plugin-svelte": "^3.2.3",
-		"svelte": "^5.0.0-next.126",
+		"svelte": "^5.0.0-next.128",
 		"svelte-check": "^3.7.1",
 		"tslib": "^2.6.2",
 		"typescript": "^5.4.5",

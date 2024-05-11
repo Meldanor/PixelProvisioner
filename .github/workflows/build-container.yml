@@ -1,4 +1,4 @@
-name: build-cms
+name: build-container
 
 on:
   push:
@@ -10,7 +10,6 @@ env:
 
 jobs:
   build:
-    if: ${{ github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
