@@ -4,7 +4,7 @@ import { createRelease, listReleases, type ReleaseFilter } from '$lib/server/rel
 import { env } from '$env/dynamic/private';
 
 const allowedOperatingSystems = new Set<string>(['windows', 'linux', 'osx']);
-const allowedArchitectures = new Set<string>(['x86', 'arm']);
+const allowedArchitectures = new Set<string>(['x86', 'arm64']);
 const allowedTypes = new Set<string>(['nightly', 'feature', 'release']);
 
 export const GET: RequestHandler = async ({ url: { searchParams } }) => {
