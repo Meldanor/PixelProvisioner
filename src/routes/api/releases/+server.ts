@@ -1,6 +1,11 @@
 import { error, json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { createRelease, listReleases, type ReleaseFilter } from '$lib/server/releases/service';
+import {
+	createRelease,
+	listReleases,
+	type ReleaseFilter,
+	type ReleaseMetadata
+} from '$lib/server/releases/service';
 import { env } from '$env/dynamic/private';
 
 const allowedOperatingSystems = new Set<string>(['windows', 'linux', 'osx']);
@@ -29,7 +34,7 @@ export const POST: RequestHandler = async ({ request }) => {
 		error(400, { message: 'only multipart/form-data is supported' });
 	}
 	const formData = await request.formData();
-	const { operatingSystem, architecture, type, file } = validateFormData(formData);
+	const { operatingSystem, architecture, type, file, metadata } = validateFormData(formData);
 
 	const createdRelease = await createRelease({
 		type,
@@ -37,7 +42,8 @@ export const POST: RequestHandler = async ({ request }) => {
 		environment: {
 			architecture,
 			operatingSystem
-		}
+		},
+		metadata
 	});
 	return json(createdRelease, { status: 201 });
 };
@@ -67,5 +73,42 @@ const validateFormData = (data: FormData) => {
 		error(400, { message: 'File content-type is not application/zip' });
 	}
 
-	return { operatingSystem, architecture, type, file };
+	const metadata: ReleaseMetadata = {};
+
+	if (data.get('metadata.version')) {
+		metadata.version = data.get('metadata.version') as string;
+	}
+	if (data.get('metadata.name')) {
+		metadata.name = data.get('metadata.name') as string;
+	}
+	if (data.get('metadata.commitSha')) {
+		metadata.commitSha = data.get('metadata.commitSha') as string;
+	}
+	const buildDateString = data.get('metadata.buildDate') as string;
+	if (buildDateString) {
+		metadata.buildDate = new Date(buildDateString);
+		if (Number.isNaN(metadata.buildDate.valueOf())) {
+			error(400, `Invalid buildDate string: '${buildDateString}'`);
+		}
+		if (metadata.buildDate.getTime() > new Date().getTime()) {
+			error(
+				400,
+				`Invalid buildDate '${buildDateString}'. It is after now '${new Date().toISOString()}'`
+			);
+		}
+	}
+
+	const changelogString = data.get('metadata.changelog') as string;
+	if (changelogString) {
+		try {
+			metadata.changelog = JSON.parse(changelogString);
+		} catch (err) {
+			error(400, 'Invalid changelog. Must be a JSON array');
+		}
+		if (!Array.isArray(metadata.changelog)) {
+			error(400, 'Invalid changelog. Must be a JSON array');
+		}
+	}
+
+	return { operatingSystem, architecture, type, file, metadata };
 };

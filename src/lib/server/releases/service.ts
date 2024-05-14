@@ -14,6 +14,15 @@ interface NewRelease {
 	};
 	type: string;
 	file: File;
+	metadata: ReleaseMetadata;
+}
+
+interface ReleaseMetadata {
+	version?: string;
+	name?: string;
+	changelog?: string[];
+	commitSha?: string;
+	buildDate?: Date;
 }
 
 interface Release {
@@ -23,12 +32,13 @@ interface Release {
 	file: {
 		name: string;
 		size: number;
-	},
+	};
 	environment: {
 		operatingSystem: string;
 		architecture: string;
 	};
 	type: string;
+	metadata: ReleaseMetadata;
 }
 
 interface ReleaseFilter {
@@ -49,12 +59,13 @@ async function createRelease(newRelease: NewRelease): Promise<Release> {
 		_id: id,
 		file: {
 			name: newRelease.file.name,
-			size: newRelease.file.size,
+			size: newRelease.file.size
 		},
 		date: new Date(),
 		environment: newRelease.environment,
 		type: newRelease.type,
-		sha1: hash
+		sha1: hash,
+		metadata: newRelease.metadata
 	};
 
 	await getDb().insertAsync(release);
@@ -138,6 +149,7 @@ export {
 	type NewRelease,
 	type Release,
 	type ReleaseFilter,
+	type ReleaseMetadata,
 	createRelease,
 	getRelease,
 	getPathToRelease,
